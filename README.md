@@ -235,7 +235,6 @@ El detalle completo está en [`tests/casos_prueba.md`](tests/casos_prueba.md).
 ## 8. Ejemplo de uso
 
 ```python
-# Ejecutar desde la carpeta src/
 from motor_inferencia import diagnosticar
 
 r = diagnosticar([("ErrorHTTP", 401), ("Autenticacion", "OAuth2")])
