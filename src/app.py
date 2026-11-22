@@ -312,8 +312,34 @@ def _show_resultado(resultado):
                         "Por eso, el sistema considera esta causa como una posibilidad; "
                         "no significa que esté confirmada."
                     )
-                    with st.expander("Ver detalle técnico de «¿Por qué?»"):
-                        st.code(explicacion)
+                    with st.expander("Ver cómo se conectan los pasos"):
+                        st.write(
+                            "La causa se obtiene siguiendo esta cadena. En cada paso "
+                            "puedes ver qué información se usó y qué resultado produjo:"
+                        )
+                        for paso, regla in enumerate(reglas, start=1):
+                            with st.container(border=True):
+                                st.markdown(
+                                    f"**Paso {paso}: {regla['descripcion']}**"
+                                )
+                                st.caption(f"Regla del sistema: {regla['regla']}")
+                                st.markdown("**Información que activó este paso**")
+                                for condicion in regla["condiciones"]:
+                                    st.markdown(f"- {_fact_label(condicion)}")
+                                st.markdown("**Qué concluyó el sistema**")
+                                st.write(_fact_label(regla["conclusion"]))
+                                st.caption(
+                                    "Factor de certeza de este paso: "
+                                    f"{regla['certeza']:.0%}"
+                                )
+                        st.caption(
+                            "La confianza de la causa combina los pasos de la cadena; "
+                            "no es una probabilidad garantizada."
+                        )
+                        with st.expander(
+                            "Ver notación técnica original (opcional)"
+                        ):
+                            st.code(explicacion)
 
         st.subheader("Recomendaciones para revisar")
         st.caption(
