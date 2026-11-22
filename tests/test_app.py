@@ -65,6 +65,39 @@ def test_cambiar_ejemplo_limpia_y_precarga_el_formulario():
     assert app.session_state["contexto"] == []
 
 
+def test_entrada_vacia_desde_el_formulario():
+    app = AppTest.from_file(str(APP_PATH)).run()
+    app.button(key="diagnosticar").click().run()
+
+    resultado = app.session_state["resultado"]
+    assert resultado["estado"] == "sin_conclusion"
+    assert resultado["causas"] == []
+    assert any("No se ingresó ningún hecho" in aviso for aviso in resultado["advertencias"])
+    assert any("No se ingresó ningún hecho" in aviso.value for aviso in app.warning)
+
+
+def test_codigo_404_desde_el_formulario():
+    app = AppTest.from_file(str(APP_PATH)).run()
+    app.selectbox(key="codigo_http").select(404)
+    app.button(key="diagnosticar").click().run()
+
+    resultado = app.session_state["resultado"]
+    assert resultado["hechos_iniciales"] == [("ErrorHTTP", 404)]
+    assert resultado["estado"] == "sin_conclusion"
+    assert resultado["causas"] == []
+    assert any("no encontramos una causa" in aviso.value for aviso in app.info)
+
+
+def test_hechos_repetidos_muestran_advertencia_en_interfaz():
+    app = AppTest.from_file(str(APP_PATH)).run()
+    app.sidebar.selectbox(key="caso_precargado").select(16).run()
+
+    assert any(
+        "Hecho repetido" in aviso for aviso in app.session_state["resultado"]["advertencias"]
+    )
+    assert any("Hecho repetido" in aviso.value for aviso in app.warning)
+
+
 def test_formulario_manual_explica_y_limpia():
     app = AppTest.from_file(str(APP_PATH)).run()
     assert {
@@ -120,9 +153,15 @@ def test_formulario_acepta_otro_codigo_http():
 
 
 def test_autenticaciones_simultaneas_muestran_advertencia():
+    app = AppTest.from_file(str(APP_PATH)).run()
     errores, advertencias = validar_hechos(
         [("Autenticacion", "OAuth2"), ("Autenticacion", "ApiKey")]
     )
 
+    assert set(app.radio(key="autenticacion").options) == {
+        "No aplica",
+        "OAuth 2.0 (autorización mediante una cuenta)",
+        "Clave API (una clave de acceso)",
+    }
     assert errores == []
     assert any("OAuth2 y ApiKey a la vez" in advertencia for advertencia in advertencias)

@@ -7,7 +7,7 @@
 |---|---|
 | **Autores** | Laura Daniela Lopez Santos · Juan Jose Narvaez Ortiz |
 | **Docente** | Gonzalo Ricardo Novoa |
-| **Estado** | Backend y pruebas de Rol A; interfaz Streamlit integrada |
+| **Estado** | Interfaz Streamlit integrada y validada |
 
 ---
 
@@ -57,10 +57,9 @@ lopez-narvaez-sbc/
 ├── tests/
 │   ├── test_motor.py         # Pruebas automáticas con pytest
 │   ├── test_app.py           # Pruebas de integración de Streamlit
-│   └── casos_prueba.md       # Tabla de validación, cobertura y nota del caso 11
 │
 ├── docs/
-│   ├── traspaso.md           # Guía de traspaso Rol A → Rol B y boceto de interfaz
+│   ├── documentacion_tecnica.pdf
 │   └── capturas/             # Capturas de pantalla para la documentación
 │
 └── notebooks/
@@ -88,7 +87,7 @@ python -m streamlit run src/app.py
 python -m pytest -v
 ```
 
-Resultado esperado: **`38 passed`** (19 pruebas del motor y 19 de interfaz/validación).
+Resultado esperado: **`43 passed`** (19 pruebas del motor y 24 de interfaz/validación).
 
 ---
 
@@ -126,7 +125,7 @@ Se creó `tests/test_motor.py`, que ejecuta los 17 casos de `CASOS_PRUEBA` y ade
 `pytest.ini` agrega `src` al `pythonpath` para que las pruebas encuentren los módulos.
 
 ### Paso 7. Documentación de la validación
-Se generó `tests/casos_prueba.md` con la tabla de validación de los 17 casos, la matriz de cobertura (15 de 15 reglas) y el análisis del caso 11 (fallas simultáneas).
+Los 17 escenarios están definidos en `src/casos_prueba.py`. `tests/test_app.py` los selecciona desde la interfaz de Streamlit y verifica el resultado esperado; `tests/test_motor.py` valida el motor directamente.
 
 ### Paso 8. Limpieza del repositorio
 Se agregó `.gitignore` para no subir archivos generados automáticamente (`*.pyc` y `.pytest_cache/`) y se retiraron del repositorio los que ya se habían subido.
@@ -233,7 +232,7 @@ Encadenamiento **hacia adelante**: aplica las reglas una y otra vez hasta que ya
 | 17 | Base con ciclo A→B→A | Robustez |
 
 **Resultado: 17 de 17 casos correctos. Cobertura: 15 de 15 reglas.**
-El detalle completo está en [`tests/casos_prueba.md`](tests/casos_prueba.md).
+Los escenarios y resultados esperados están en [`src/casos_prueba.py`](src/casos_prueba.py) y se comprueban desde la interfaz en [`tests/test_app.py`](tests/test_app.py).
 
 ---
 
@@ -259,7 +258,9 @@ print(r["explicacion"])
 
 - [x] Interfaz web en Streamlit (`src/app.py`), ejecutable con `streamlit run src/app.py`.
 - [x] Pruebas de integración de la interfaz y ejecución de los 17 casos precargados.
+- [x] Validación de casos límite y pruebas en un entorno virtual limpio.
+- [x] Commit de integración y etiqueta local `v2-app`.
 - [ ] Documentación técnica: secciones 5 (interfaz) y 7 (manual / despliegue).
 - [ ] Manual de usuario con capturas.
 - [ ] Enlace al video de demostración.
-- [ ] Etiqueta `v2-app` y ZIP final `lopez_narvaez_proyecto_final_sbc.zip`.
+- [ ] ZIP final `lopez_narvaez_proyecto_final_sbc.zip`.
