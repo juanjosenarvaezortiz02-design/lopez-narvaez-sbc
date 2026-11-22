@@ -30,26 +30,26 @@ Un diccionario (no imprime nada):
 | `errores`, `advertencias` | Listas de textos | `st.error` / `st.warning` |
 | `hechos_iniciales` | Hechos de entrada | Necesario para llamar a `porque()` |
 
-Botón «¿Por qué?»: `porque(("Recomendar", rec), r["hechos_iniciales"], r["reglas_aplicadas"])`.
+Botón «¿Por qué?»: `porque(("CausaRaiz", causa), r["hechos_iniciales"], r["reglas_aplicadas"])`.
 
 ## 4. Boceto de la interfaz (widget por elemento)
 
 | Sección | Elemento | Widget de Streamlit | Fuente en el backend |
 |---|---|---|---|
-| Entrada | Códigos HTTP | `st.multiselect` (401, 403, 429, 500, 502, 503, 504, 404…) | `DOMINIOS["K"]` → `("ErrorHTTP", c)` |
-| Entrada | Tipo de autenticación | `st.radio` (Ninguna / OAuth2 / ApiKey) | `DOMINIOS["T"]` → `("Autenticacion", t)` |
-| Entrada | Síntomas | `st.checkbox` por valor | `DOMINIOS["SIN"]` → `("Sintoma", s)` |
-| Entrada | Contexto | `st.checkbox` por valor | `DOMINIOS["CTX"]` → `("Contexto", k)` |
+| Entrada | Código HTTP | `st.selectbox` (incluye «No aplica») | `DOMINIOS["K"]` → `("ErrorHTTP", c)` |
+| Entrada | Tipo de autenticación | `st.radio` (incluye «No aplica») | `DOMINIOS["T"]` → `("Autenticacion", t)` |
+| Entrada | Síntomas | `st.multiselect` | `DOMINIOS["SIN"]` → `("Sintoma", s)` |
+| Entrada | Contexto | `st.multiselect` | `DOMINIOS["CTX"]` → `("Contexto", k)` |
 | Entrada | Botón diagnosticar | `st.button` dentro de `st.form` | `validar_hechos()` + `diagnosticar()` |
 | Resultados | Estado y mensaje | `st.success` / `st.warning` / `st.info` / `st.error` | `estado`, `mensaje` |
 | Resultados | Causas y recomendación | `st.metric` o tarjetas, ordenadas por CF | `causas` |
 | Explicación | Reglas en orden | `st.dataframe` o `st.table` | `reglas_aplicadas` |
 | Explicación | Razonamiento completo | `st.expander` + `st.code` | `explicacion` |
 | Explicación | «¿Por qué?» | `st.button` por causa | `porque()` |
-| Navegación | Casos precargados | `st.selectbox` en `st.sidebar` | `CASOS_PRUEBA` |
+| Navegación | Casos precargados | `st.selectbox` en `st.sidebar` | `CASOS_PRUEBA` (ejecutados con sus hechos completos) |
 | Navegación | Limpiar | `st.button` que reinicia `st.session_state` | — |
 
 ## 5. Lo que falta (Rol B)
 - `src/app.py` en Streamlit (`streamlit run src/app.py`).
-- Integración y prueba con los casos 1, 11 y 13.
+- Pruebas de integración con los 17 casos desde el selector y el formulario manual.
 - Documentación técnica secciones 5 y 7, manual de usuario con capturas, README final, ZIP `lopez_narvaez_proyecto_final_sbc.zip`. Etiqueta `v2-app`.

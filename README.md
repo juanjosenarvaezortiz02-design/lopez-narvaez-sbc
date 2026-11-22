@@ -7,7 +7,7 @@
 |---|---|
 | **Autores** | Laura Daniela Lopez Santos · Juan Jose Narvaez Ortiz |
 | **Docente** | Gonzalo Ricardo Novoa |
-| **Estado** | Fase Rol A terminada (backend + pruebas) · etiqueta `v1-backend` |
+| **Estado** | Backend y pruebas de Rol A; interfaz Streamlit integrada |
 
 ---
 
@@ -51,10 +51,12 @@ lopez-narvaez-sbc/
 ├── src/
 │   ├── base_conocimiento.py  # DOMINIOS, PREDICADOS, SOLUCIONES, REGLAS, BASE_CONOCIMIENTO
 │   ├── motor_inferencia.py   # Motor, explicación, validación, diagnosticar()
-│   └── casos_prueba.py       # CASOS_PRUEBA (17) y ejecutar_caso()
+│   ├── casos_prueba.py       # CASOS_PRUEBA (17) y ejecutar_caso()
+│   └── app.py                # Interfaz Streamlit
 │
 ├── tests/
 │   ├── test_motor.py         # Pruebas automáticas con pytest
+│   ├── test_app.py           # Pruebas de integración de Streamlit
 │   └── casos_prueba.md       # Tabla de validación, cobertura y nota del caso 11
 │
 ├── docs/
@@ -79,11 +81,14 @@ cd lopez-narvaez-sbc
 # 2. Instalar dependencias
 python -m pip install -r requirements.txt
 
-# 3. Ejecutar las pruebas
+# 3. Ejecutar la aplicación
+python -m streamlit run src/app.py
+
+# 4. Ejecutar las pruebas
 python -m pytest -v
 ```
 
-Resultado esperado: **`19 passed`** (17 casos de prueba + 2 pruebas adicionales).
+Resultado esperado: **`38 passed`** (19 pruebas del motor y 19 de interfaz/validación).
 
 ---
 
@@ -252,7 +257,8 @@ print(r["explicacion"])
 
 ## 9. Pendiente (Rol B)
 
-- [ ] Interfaz web en Streamlit (`src/app.py`), ejecutable con `streamlit run src/app.py`.
+- [x] Interfaz web en Streamlit (`src/app.py`), ejecutable con `streamlit run src/app.py`.
+- [x] Pruebas de integración de la interfaz y ejecución de los 17 casos precargados.
 - [ ] Documentación técnica: secciones 5 (interfaz) y 7 (manual / despliegue).
 - [ ] Manual de usuario con capturas.
 - [ ] Enlace al video de demostración.
