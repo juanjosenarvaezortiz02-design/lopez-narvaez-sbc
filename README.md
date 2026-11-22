@@ -21,7 +21,6 @@
 6. [Motor de inferencia](#6-motor-de-inferencia)
 7. [Casos de prueba](#7-casos-de-prueba)
 8. [Ejemplo de uso](#8-ejemplo-de-uso)
-9. [Pendiente (Rol B)](#9-pendiente-rol-b)
 
 ---
 
@@ -57,9 +56,13 @@ lopez-narvaez-sbc/
 ├── tests/
 │   ├── test_motor.py         # Pruebas automáticas con pytest
 │   ├── test_app.py           # Pruebas de integración de Streamlit
+│   └── casos_prueba.md       # Tabla de validación y cobertura
 │
 ├── docs/
 │   ├── documentacion_tecnica.pdf
+│   ├── documentacion_tecnica.docx
+│   ├── manual_usuario.pdf
+│   ├── manual_usuario.docx
 │   └── capturas/             # Capturas de pantalla para la documentación
 │
 └── notebooks/
@@ -70,23 +73,36 @@ lopez-narvaez-sbc/
 
 ## 3. Instalación y ejecución
 
-**Requisitos:** Python 3.10 o superior y Git.
+**Requisitos:** Python 3.10 o superior y Git. Las dependencias directas están en
+`requirements.txt`: Streamlit para la aplicación y pytest para las pruebas.
 
-```bash
-# 1. Clonar el repositorio
+### Windows (PowerShell)
+```powershell
 git clone https://github.com/juanjosenarvaezortiz02-design/lopez-narvaez-sbc.git
 cd lopez-narvaez-sbc
-
-# 2. Instalar dependencias
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-
-# 3. Ejecutar la aplicación
-python -m streamlit run src/app.py
-
-# 4. Ejecutar las pruebas
-python -m pytest -v
+python -m streamlit run src\app.py
 ```
 
+### macOS / Linux
+```bash
+git clone https://github.com/juanjosenarvaezortiz02-design/lopez-narvaez-sbc.git
+cd lopez-narvaez-sbc
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m streamlit run src/app.py
+```
+
+Streamlit abre la interfaz en el navegador; si no se abre automáticamente, visita
+<http://localhost:8501>. Para detenerla, pulsa **Ctrl+C** en la terminal.
+
+Para ejecutar las pruebas desde la raíz del proyecto:
+```bash
+python -m pytest -v
+```
 Resultado esperado: **`43 passed`** (19 pruebas del motor y 24 de interfaz/validación).
 
 ---
@@ -253,14 +269,3 @@ print(r["explicacion"])
 `diagnosticar()` devuelve un diccionario con: `estado`, `mensaje`, `causas`, `reglas_aplicadas`, `explicacion`, `errores`, `advertencias` y `hechos_iniciales`.
 
 ---
-
-## 9. Pendiente (Rol B)
-
-- [x] Interfaz web en Streamlit (`src/app.py`), ejecutable con `streamlit run src/app.py`.
-- [x] Pruebas de integración de la interfaz y ejecución de los 17 casos precargados.
-- [x] Validación de casos límite y pruebas en un entorno virtual limpio.
-- [x] Commit de integración y etiqueta local `v2-app`.
-- [ ] Documentación técnica: secciones 5 (interfaz) y 7 (manual / despliegue).
-- [ ] Manual de usuario con capturas.
-- [ ] Enlace al video de demostración.
-- [ ] ZIP final `lopez_narvaez_proyecto_final_sbc.zip`.
