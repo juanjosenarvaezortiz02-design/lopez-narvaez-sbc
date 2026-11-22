@@ -25,6 +25,44 @@ def test_caso_precargado_desde_streamlit(caso):
     }
     assert ejecucion["hechos_iniciales"] == caso["hechos"]
     assert ejecucion["estado"] == caso["estado"] or caso["estado"] is None
+    formulario_representable = all(
+        hecho[0] in {"ErrorHTTP", "Autenticacion", "Sintoma", "Contexto"}
+        for hecho in caso["hechos"]
+    )
+    if formulario_representable:
+        codigos = [hecho[1] for hecho in caso["hechos"] if hecho[0] == "ErrorHTTP"]
+        autenticaciones = [
+            hecho[1] for hecho in caso["hechos"] if hecho[0] == "Autenticacion"
+        ]
+        assert app.session_state["codigo_http"] == (
+            codigos[0] if codigos and codigos[0] in (400, 401, 403, 404, 429, 500, 502, 503, 504)
+            else "Otro código" if codigos else None
+        )
+        assert app.session_state["autenticacion"] == (
+            autenticaciones[0] if autenticaciones else "No aplica"
+        )
+        assert app.session_state["sintomas"] == [
+            hecho[1] for hecho in caso["hechos"] if hecho[0] == "Sintoma"
+        ]
+        assert app.session_state["contexto"] == [
+            hecho[1] for hecho in caso["hechos"] if hecho[0] == "Contexto"
+        ]
+        assert any("Se limpiaron los campos anteriores" in item.value for item in app.info)
+    else:
+        assert app.session_state["codigo_http"] is None
+        assert any("caso técnico del motor" in item.value for item in app.info)
+
+
+def test_cambiar_ejemplo_limpia_y_precarga_el_formulario():
+    app = AppTest.from_file(str(APP_PATH)).run()
+    selector = app.sidebar.selectbox(key="caso_precargado")
+    selector.select(1).run()
+    app.sidebar.selectbox(key="caso_precargado").select(8).run()
+
+    assert app.session_state["codigo_http"] is None
+    assert app.session_state["autenticacion"] == "No aplica"
+    assert app.session_state["sintomas"] == ["ExpresionInvalida"]
+    assert app.session_state["contexto"] == []
 
 
 def test_formulario_manual_explica_y_limpia():
@@ -35,7 +73,15 @@ def test_formulario_manual_explica_y_limpia():
         "Cómo usarla",
         "Glosario de convenciones",
         "Limitaciones",
+        "¿Qué significan los colores de los resultados?",
     }.issubset({expander.label for expander in app.expander})
+    assert len(app.table) == 1
+    assert set(app.table[0].value["Color"]) == {
+        "🟢 Verde",
+        "🟡 Amarillo",
+        "🔵 Azul",
+        "🔴 Rojo",
+    }
 
     app.selectbox(key="codigo_http").select(401)
     app.radio(key="autenticacion").set_value("OAuth2")
@@ -49,6 +95,9 @@ def test_formulario_manual_explica_y_limpia():
     assert any("Un 401 indica credencial inválida" in item.value for item in app.markdown)
     assert any(
         "Recomendaciones para revisar" in item.value for item in app.subheader
+    )
+    assert any(
+        "Conclusión de este paso:" in item.value for item in app.markdown
     )
     assert any("¿Por qué CausaRaiz(TokenVencido)?" in code.value for code in app.code)
 

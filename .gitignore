@@ -1,2 +1,4 @@
 *.pyc
 .pytest_cache/
+personal/
+__pycache__/

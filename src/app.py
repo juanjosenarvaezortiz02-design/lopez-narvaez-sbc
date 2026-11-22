@@ -174,13 +174,45 @@ def _clear_session():
         st.session_state.pop(key, None)
 
 
-def _use_manual_input():
-    st.session_state[CASE_KEY] = None
-    st.session_state[ACTIVE_CASE_KEY] = None
-    st.session_state[RESULT_KEY] = None
-    st.session_state[RESULT_SOURCE_KEY] = None
-    st.session_state[CASE_CHECKS_KEY] = None
-    st.session_state[WHY_KEY] = None
+def _clear_manual_fields():
+    st.session_state[HTTP_KEY] = None
+    st.session_state[OTHER_HTTP_KEY] = None
+    st.session_state[AUTH_KEY] = NO_APLICA
+    st.session_state[SYMPTOMS_KEY] = []
+    st.session_state[CONTEXT_KEY] = []
+
+
+def _load_case_into_form(caso):
+    _clear_manual_fields()
+    hechos = caso["hechos"]
+
+    codigos = [hecho[1] for hecho in hechos if hecho[0] == "ErrorHTTP"]
+    if codigos:
+        codigo = codigos[0]
+        if codigo in HTTP_DESCRIPTIONS:
+            st.session_state[HTTP_KEY] = codigo
+        else:
+            st.session_state[HTTP_KEY] = OTHER_HTTP
+            st.session_state[OTHER_HTTP_KEY] = codigo
+
+    autenticaciones = [
+        hecho[1] for hecho in hechos if hecho[0] == "Autenticacion"
+    ]
+    if autenticaciones:
+        st.session_state[AUTH_KEY] = autenticaciones[0]
+    st.session_state[SYMPTOMS_KEY] = [
+        hecho[1] for hecho in hechos if hecho[0] == "Sintoma"
+    ]
+    st.session_state[CONTEXT_KEY] = [
+        hecho[1] for hecho in hechos if hecho[0] == "Contexto"
+    ]
+
+
+def _case_is_representable_in_form(caso):
+    return all(
+        hecho[0] in {"ErrorHTTP", "Autenticacion", "Sintoma", "Contexto"}
+        for hecho in caso["hechos"]
+    )
 
 
 def _build_facts():
@@ -305,25 +337,43 @@ def _show_resultado(resultado):
         reglas_aplicadas = resultado["reglas_aplicadas"]
         if reglas_aplicadas:
             st.write(
-                "El sistema compara las observaciones con sus reglas. Cada regla que "
-                "coincide aporta un paso al diagnóstico:"
+                "El sistema compara tus observaciones con sus reglas. En cada paso "
+                "puedes ver qué información usó y qué dedujo:"
             )
             for paso, regla in enumerate(reglas_aplicadas, start=1):
                 st.markdown(
-                    f"{paso}. **{regla['regla']}:** {regla['descripcion']}"
+                    f"**Paso {paso} — {regla['descripcion']}** "
+                    f"({regla['regla']})"
                 )
-                condiciones = " y ".join(
-                    _fact_label(condicion) for condicion in regla["condiciones"]
+                st.write(
+                    "**Información considerada:** "
+                    + " y ".join(
+                        _fact_label(condicion) for condicion in regla["condiciones"]
+                    )
                 )
-                st.caption(f"Se cumplió porque: {condiciones}")
+                st.write(
+                    f"**Conclusión de este paso:** "
+                    f"{_fact_label(regla['conclusion'])}"
+                )
+                st.caption(
+                    f"Factor de certeza de este paso: {regla['certeza']:.0%}"
+                )
+            st.caption(
+                "El factor de certeza es una medida interna de las reglas, no una "
+                "probabilidad garantizada."
+            )
         else:
-            st.write(
+            st.info(
                 "No se activó ninguna regla con las observaciones ingresadas. "
                 "Esto puede ocurrir si falta información o si el problema no está "
                 "cubierto por el sistema."
             )
-    with st.expander("Ver texto técnico original"):
-        st.code(resultado["explicacion"])
+        with st.expander("Ver texto técnico original (opcional)"):
+            st.caption(
+                "Esta versión conserva los nombres y la notación interna del motor. "
+                "Para una lectura sencilla, usa los pasos explicados arriba."
+            )
+            st.code(resultado["explicacion"])
 
 
 def main():
@@ -425,11 +475,46 @@ def main():
                 st.session_state[CASE_CHECKS_KEY] = None
                 st.session_state[RESULT_SOURCE_KEY] = None
         else:
+            caso = CASES_BY_ID[selected_case]
+            _load_case_into_form(caso)
             with st.spinner("Ejecutando el caso precargado..."):
-                ejecucion = ejecutar_caso(CASES_BY_ID[selected_case])
+                ejecucion = ejecutar_caso(caso)
             st.session_state[RESULT_KEY] = ejecucion["resultado"]
             st.session_state[CASE_CHECKS_KEY] = ejecucion["checks"]
             st.session_state[RESULT_SOURCE_KEY] = "caso"
+
+    if st.session_state[CASE_KEY] is not None:
+        caso = CASES_BY_ID[st.session_state[CASE_KEY]]
+        if _case_is_representable_in_form(caso):
+            st.info(
+                "Se limpiaron los campos anteriores y se cargaron los datos de este "
+                "ejemplo. Puedes revisarlos o modificarlos y pulsar "
+                "**Buscar posibles causas** para probarlos."
+            )
+            with st.expander("Ver los datos usados en este ejemplo", expanded=True):
+                if caso["hechos"]:
+                    for hecho in caso["hechos"]:
+                        st.markdown(f"- {_fact_label(hecho)}")
+                else:
+                    st.write(
+                        "Este ejemplo no selecciona ningún dato; deja el formulario "
+                        "vacío para probar qué ocurre sin observaciones."
+                    )
+                codigos = [
+                    hecho[1] for hecho in caso["hechos"] if hecho[0] == "ErrorHTTP"
+                ]
+                if len(codigos) > 1:
+                    st.caption(
+                        "Este caso usa varios códigos HTTP. El formulario permite "
+                        "seleccionar uno; el resultado precargado sí se calculó con "
+                        "todos los códigos indicados arriba."
+                    )
+        else:
+            st.info(
+                "Este es un caso técnico del motor de inferencia y no corresponde "
+                "a una combinación de los campos normales. Se ejecutó usando su "
+                "configuración especial."
+            )
 
     st.header("1. Cuéntanos qué ocurrió")
     st.caption(
@@ -505,6 +590,35 @@ def main():
         st.session_state[WHY_KEY] = None
 
     st.header("2. Posibles causas")
+    with st.expander("¿Qué significan los colores de los resultados?"):
+        st.table(
+            [
+                {
+                    "Color": "🟢 Verde",
+                    "Significado": "Diagnóstico completo: se encontró una causa probable.",
+                    "Qué hacer": "Revisa la recomendación y confirma antes de cambiar el flujo.",
+                },
+                {
+                    "Color": "🟡 Amarillo",
+                    "Significado": "Resultado parcial o hay una advertencia.",
+                    "Qué hacer": "Lee el mensaje; agrega datos si faltan y revisa la advertencia.",
+                },
+                {
+                    "Color": "🔵 Azul",
+                    "Significado": "Sin conclusión: las reglas no identificaron una causa.",
+                    "Qué hacer": "Agrega observaciones o consulta las limitaciones en la guía.",
+                },
+                {
+                    "Color": "🔴 Rojo",
+                    "Significado": "Entrada inválida: hay datos que deben corregirse.",
+                    "Qué hacer": "Lee el error y corrige la información antes de continuar.",
+                },
+            ]
+        )
+        st.caption(
+            "El color indica el estado del análisis, no la gravedad de la causa. "
+            "La confianza de cada causa se muestra por separado."
+        )
     if st.session_state[RESULT_KEY] is None:
         st.info(
             "Cuando estés listo, selecciona **Buscar posibles causas**. "
