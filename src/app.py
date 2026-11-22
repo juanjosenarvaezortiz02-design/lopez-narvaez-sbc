@@ -403,7 +403,7 @@ def _show_resultado(resultado):
 
 
 def main():
-    st.set_page_config(page_title="Diagnóstico experto de n8n", page_icon="🔎")
+    st.set_page_config(page_title="Diagnóstico experto de n8n")
     st.title("Ayuda para revisar un flujo de trabajo")
     st.caption(
         "No necesitas conocer n8n: cuéntanos qué pasó y te mostraremos posibles causas "
