@@ -99,6 +99,9 @@ def test_formulario_manual_explica_y_limpia():
     assert any(
         "Conclusión de este paso:" in item.value for item in app.markdown
     )
+    assert "Ver cómo se conectan los pasos" in {
+        expander.label for expander in app.expander
+    }
     assert any("¿Por qué CausaRaiz(TokenVencido)?" in code.value for code in app.code)
 
     app.sidebar.button(key="limpiar").click().run()
