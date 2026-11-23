@@ -146,8 +146,6 @@ Los 17 escenarios están definidos en `src/casos_prueba.py`. `tests/test_app.py`
 ### Paso 8. Limpieza del repositorio
 Se agregó `.gitignore` para no subir archivos generados automáticamente (`*.pyc` y `.pytest_cache/`) y se retiraron del repositorio los que ya se habían subido.
 
-### Paso 9. Traspaso al Rol B
-Se escribió `docs/traspaso.md` con lo que devuelve `diagnosticar()`, qué widget de Streamlit corresponde a cada elemento de la interfaz y lo que falta por hacer. La versión se marca con la etiqueta `v1-backend`.
 
 ---
 
