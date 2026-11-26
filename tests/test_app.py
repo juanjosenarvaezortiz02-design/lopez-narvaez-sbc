@@ -8,11 +8,50 @@ from motor_inferencia import validar_hechos
 
 
 APP_PATH = Path(__file__).parents[1] / "src" / "app.py"
+SCREENSHOTS_DIR = Path(__file__).parents[1] / "docs" / "capturas"
+
+
+def _form_app():
+    app = AppTest.from_file(str(APP_PATH))
+    app.session_state["pagina"] = "Probar diagnóstico"
+    return app.run(timeout=10)
+
+
+def test_guia_inicial_y_navegacion_al_formulario():
+    app = AppTest.from_file(str(APP_PATH)).run(timeout=20)
+
+    assert app.session_state["pagina"] == "Conoce n8n"
+    assert any("Una guía sencilla para entender n8n" in item.value for item in app.title)
+    assert all(
+        (SCREENSHOTS_DIR / filename).is_file()
+        for filename in (
+            "05_interfaz.png",
+            "06_flujo.png",
+            "07_nodos.png",
+            "08_flujo_nodos.png",
+            "09_salida_request_401.png",
+            "10_salida_capturar_error.png",
+            "11_logs.png",
+        )
+    )
+    assert any("HTTP Request" in item.value for item in app.markdown)
+
+    app.button(key="ir_a_diagnostico_desde_guia").click().run(timeout=10)
+
+    assert app.session_state["pagina"] == "Probar diagnóstico"
+    assert any("Cuéntanos qué ocurrió" in item.value for item in app.header)
+    assert app.selectbox(key="codigo_http")
+
+    app.sidebar.button(key="navegar_guia").click().run(timeout=10)
+    assert app.session_state["pagina"] == "Conoce n8n"
+
+    app.sidebar.button(key="navegar_diagnostico").click().run(timeout=10)
+    assert app.session_state["pagina"] == "Probar diagnóstico"
 
 
 @pytest.mark.parametrize("caso", CASOS_PRUEBA, ids=lambda caso: f"caso_{caso['id']}")
 def test_caso_precargado_desde_streamlit(caso):
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
 
     app.sidebar.selectbox(key="caso_precargado").select(caso["id"]).run()
 
@@ -54,7 +93,7 @@ def test_caso_precargado_desde_streamlit(caso):
 
 
 def test_cambiar_ejemplo_limpia_y_precarga_el_formulario():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     selector = app.sidebar.selectbox(key="caso_precargado")
     selector.select(1).run()
     app.sidebar.selectbox(key="caso_precargado").select(8).run()
@@ -66,7 +105,7 @@ def test_cambiar_ejemplo_limpia_y_precarga_el_formulario():
 
 
 def test_entrada_vacia_desde_el_formulario():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     app.button(key="diagnosticar").click().run()
 
     resultado = app.session_state["resultado"]
@@ -77,7 +116,7 @@ def test_entrada_vacia_desde_el_formulario():
 
 
 def test_codigo_404_desde_el_formulario():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     app.selectbox(key="codigo_http").select(404)
     app.button(key="diagnosticar").click().run()
 
@@ -89,7 +128,7 @@ def test_codigo_404_desde_el_formulario():
 
 
 def test_hechos_repetidos_muestran_advertencia_en_interfaz():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     app.sidebar.selectbox(key="caso_precargado").select(16).run()
 
     assert any(
@@ -99,7 +138,7 @@ def test_hechos_repetidos_muestran_advertencia_en_interfaz():
 
 
 def test_formulario_manual_explica_y_limpia():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     assert {
         "Qué hace esta página",
         "Cómo funciona",
@@ -143,7 +182,7 @@ def test_formulario_manual_explica_y_limpia():
 
 
 def test_formulario_acepta_otro_codigo_http():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     app.selectbox(key="codigo_http").select("Otro código").run()
     app.number_input(key="otro_codigo_http").set_value(418)
     app.button(key="diagnosticar").click().run()
@@ -153,7 +192,7 @@ def test_formulario_acepta_otro_codigo_http():
 
 
 def test_autenticaciones_simultaneas_muestran_advertencia():
-    app = AppTest.from_file(str(APP_PATH)).run()
+    app = _form_app()
     errores, advertencias = validar_hechos(
         [("Autenticacion", "OAuth2"), ("Autenticacion", "ApiKey")]
     )

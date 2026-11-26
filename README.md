@@ -51,7 +51,7 @@ lopez-narvaez-sbc/
 │   ├── base_conocimiento.py  # DOMINIOS, PREDICADOS, SOLUCIONES, REGLAS, BASE_CONOCIMIENTO
 │   ├── motor_inferencia.py   # Motor, explicación, validación, diagnosticar()
 │   ├── casos_prueba.py       # CASOS_PRUEBA (17) y ejecutar_caso()
-│   └── app.py                # Interfaz Streamlit
+│   └── app.py                # Guía visual de n8n y formulario Streamlit
 │
 ├── tests/
 │   ├── test_motor.py         # Pruebas automáticas con pytest
@@ -99,11 +99,18 @@ python -m streamlit run src/app.py
 Streamlit abre la interfaz en el navegador; si no se abre automáticamente, visita
 <http://localhost:8501>. Para detenerla, pulsa **Ctrl+C** en la terminal.
 
+Al abrirla, encontrarás una guía visual para principiantes que explica cómo se
+organizan los flujos, los nodos, las conexiones y los registros de n8n. Las
+imágenes se despliegan cuando las necesitas para mantener la lectura sencilla.
+La barra lateral organiza el recorrido en dos pasos: **Aprende cómo funciona
+n8n** y **Prueba el diagnóstico**. También puedes volver a la guía desde el
+formulario.
+
 Para ejecutar las pruebas desde la raíz del proyecto:
 ```bash
 python -m pytest -v
 ```
-Resultado esperado: **`43 passed`** (19 pruebas del motor y 24 de interfaz/validación).
+Resultado esperado: **`44 passed`** (19 pruebas del motor y 25 de interfaz/validación).
 
 ---
 

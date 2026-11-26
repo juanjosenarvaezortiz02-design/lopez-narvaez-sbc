@@ -1,5 +1,7 @@
 """Interfaz Streamlit para el sistema experto de diagnóstico de n8n."""
 
+from pathlib import Path
+
 import streamlit as st
 
 from base_conocimiento import DOMINIOS, PREDICADOS
@@ -18,11 +20,15 @@ RESULT_KEY = "resultado"
 RESULT_SOURCE_KEY = "_origen_resultado"
 CASE_CHECKS_KEY = "_checks_caso"
 WHY_KEY = "_causa_explicada"
+PAGE_KEY = "pagina"
 
 CASES_BY_ID = {caso["id"]: caso for caso in CASOS_PRUEBA}
 NO_APLICA = "No aplica"
 NO_CASE = "Sin caso precargado"
 OTHER_HTTP = "Otro código"
+INTRO_PAGE = "Conoce n8n"
+DIAGNOSIS_PAGE = "Probar diagnóstico"
+SCREENSHOTS_DIR = Path(__file__).resolve().parent.parent / "docs" / "capturas"
 
 HTTP_DESCRIPTIONS = {
     400: "Solicitud incorrecta",
@@ -172,6 +178,322 @@ def _clear_session():
         WHY_KEY,
     ):
         st.session_state.pop(key, None)
+
+
+def _go_to_diagnosis():
+    st.session_state[PAGE_KEY] = DIAGNOSIS_PAGE
+
+
+def _go_to_guide():
+    st.session_state[PAGE_KEY] = INTRO_PAGE
+
+
+def _apply_visual_theme():
+    st.markdown(
+        """
+        <style>
+        :root {
+            --primary-color: #54d6c5;
+            --background-color: #0b1220;
+            --secondary-background-color: #111b2d;
+            --text-color: #e8eef7;
+            --font: sans-serif;
+            color-scheme: dark;
+        }
+        .stApp {
+            background:
+                radial-gradient(ellipse at 12% 0%, rgba(35, 91, 112, .20), transparent 38%),
+                #0b1220;
+            color: #e8eef7;
+        }
+        [data-testid="stAppViewContainer"] { background: transparent; }
+        [data-testid="stHeader"] { background: rgba(11, 18, 32, .72); }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #111b2d 0%, #0e1727 100%);
+            border-right: 1px solid rgba(148, 163, 184, .12);
+        }
+        [data-testid="stMain"] .block-container {
+            max-width: 1080px;
+            padding: 2.4rem 2rem 5rem;
+        }
+        h1, h2, h3 {
+            color: #f3f7fc;
+            letter-spacing: -.025em;
+        }
+        h1 { font-weight: 720; }
+        [data-testid="stCaptionContainer"] {
+            color: #9cabc0;
+            line-height: 1.65;
+        }
+        [data-testid="stVerticalBlockBorderWrapper"] {
+            border: 1px solid rgba(148, 163, 184, .16) !important;
+            border-radius: 16px;
+            background: rgba(20, 32, 50, .72);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+        }
+        [data-testid="stExpander"] {
+            border: 1px solid rgba(148, 163, 184, .16);
+            border-radius: 14px;
+            background: rgba(17, 27, 45, .70);
+            overflow: hidden;
+        }
+        [data-testid="stExpander"] summary {
+            color: #dce7f3;
+            font-weight: 600;
+        }
+        [data-testid="stExpander"] summary:hover { color: #72e3d3; }
+        .stButton > button {
+            min-height: 2.65rem;
+            border: 1px solid rgba(148, 163, 184, .22);
+            border-radius: 10px;
+            background: #17243a;
+            color: #e8eef7;
+            font-weight: 600;
+            transition: border-color .16s ease, transform .16s ease, background .16s ease;
+        }
+        .stButton > button:hover {
+            border-color: #54d6c5;
+            background: #1b3042;
+            color: #f5fffd;
+            transform: translateY(-1px);
+        }
+        .stButton > button[kind="primary"] {
+            border-color: transparent;
+            background: linear-gradient(100deg, #43cabb, #65d8c8);
+            color: #09201e;
+        }
+        .stButton > button[kind="primary"]:hover {
+            background: linear-gradient(100deg, #62ddce, #83e7d8);
+            color: #09201e;
+        }
+        [data-testid="stTextInput"] input,
+        [data-testid="stNumberInput"] input,
+        [data-testid="stSelectbox"] [role="combobox"],
+        [data-testid="stMultiSelect"] [role="combobox"] {
+            border-radius: 10px;
+        }
+        [data-testid="stMetric"] {
+            padding: .8rem 1rem;
+            border: 1px solid rgba(84, 214, 197, .18);
+            border-radius: 12px;
+            background: rgba(25, 55, 66, .32);
+        }
+        [data-testid="stImage"] img {
+            border: 1px solid rgba(148, 163, 184, .16);
+            border-radius: 12px;
+        }
+        [data-testid="stAlert"] { border-radius: 12px; }
+        [data-testid="stRadioOption"] { border-radius: 10px; }
+        [data-testid="stRadioOption"] label { color: #dce7f3; }
+        [data-testid="stRadioOption"]:hover { color: #72e3d3; }
+        [data-testid="stRadioOption"][data-selected="true"] > div > div:first-child {
+            border-color: #54d6c5 !important;
+            background: #54d6c5 !important;
+        }
+        [data-testid="stRadioOption"][data-selected="true"] > div > div:first-child > div {
+            background: #0b1220 !important;
+        }
+        [data-testid="stSidebar"] .stButton > button {
+            width: 100%;
+            justify-content: flex-start;
+            text-align: left;
+            padding-left: 1rem;
+        }
+        [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+            padding-left: .35rem;
+            padding-right: .25rem;
+        }
+        .journey-progress {
+            height: 7px;
+            margin: .25rem 0 1rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, .20);
+        }
+        .journey-progress span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #35bfae, #77e2d3);
+            transition: width .25s ease;
+        }
+        @media (max-width: 720px) {
+            [data-testid="stMain"] .block-container {
+                padding: 1.5rem 1rem 3rem;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _show_n8n_guide():
+    st.title("Una guía sencilla para entender n8n")
+    st.caption(
+        "Antes de probar el diagnóstico, conoce las partes de n8n que aparecen "
+        "en las capturas. No necesitas experiencia previa: iremos de la pantalla "
+        "principal a un ejemplo de error, paso a paso."
+    )
+    st.info(
+        "**En pocas palabras:** n8n permite conectar aplicaciones y automatizar "
+        "tareas. Un flujo de trabajo es una secuencia de pasos; cada paso se "
+        "representa como un nodo."
+    )
+    st.button(
+        "Probar el formulario",
+        key="ir_a_diagnostico_desde_inicio",
+        type="primary",
+        on_click=_go_to_diagnosis,
+    )
+
+    st.subheader("1. La pantalla principal: dónde empiezan los flujos")
+    st.write(
+        "En la sección **Workflows** se organizan las automatizaciones que has "
+        "creado. En esta captura todavía no hay ninguna: el botón **Create "
+        "workflow** permite crear una nueva. Las pestañas superiores separan "
+        "los flujos de otras áreas, como credenciales y ejecuciones."
+    )
+    st.caption(
+        "**Workflow (flujo de trabajo):** la automatización completa. "
+        "**Credencial:** la cuenta o clave que permite conectarse a un servicio."
+    )
+    with st.expander("Ver imagen · Pantalla principal"):
+        st.image(
+            str(SCREENSHOTS_DIR / "05_interfaz.png"),
+            caption="Lista de flujos y áreas principales de n8n.",
+            width="stretch",
+        )
+
+    st.subheader("2. El editor: el espacio donde se construye la automatización")
+    st.write(
+        "Al abrir o crear un flujo se muestra el editor. El área central es un "
+        "lienzo donde se colocan y conectan los nodos. **Add first step** sirve "
+        "para agregar el primer paso; también se puede pedir ayuda a la opción "
+        "para construir con IA. La barra inferior permite revisar los registros "
+        "de ejecución."
+    )
+    with st.expander("Ver imagen · Editor del flujo"):
+        st.image(
+            str(SCREENSHOTS_DIR / "06_flujo.png"),
+            caption="Lienzo vacío del editor de un flujo.",
+            width="stretch",
+        )
+
+    st.subheader("3. Los nodos iniciales: qué hace que el flujo comience")
+    st.write(
+        "Al agregar el primer paso, n8n pregunta qué debe iniciar el flujo. "
+        "La captura muestra varias opciones: iniciarlo manualmente para una "
+        "prueba, responder a un evento de otra aplicación, ejecutarlo según un "
+        "horario o recibir una solicitud por un webhook. El nodo elegido como "
+        "**trigger (disparador)** es el punto de entrada: indica cuándo empieza "
+        "la automatización."
+    )
+    st.caption(
+        "**Webhook:** una dirección web que otra aplicación puede llamar para "
+        "iniciar el flujo."
+    )
+    with st.expander("Ver imagen · Opciones para iniciar el flujo"):
+        st.image(
+            str(SCREENSHOTS_DIR / "07_nodos.png"),
+            caption="Opciones de nodos que pueden iniciar un flujo.",
+            width="stretch",
+        )
+
+    st.subheader("4. Conexiones y ramas: el recorrido de los datos")
+    st.write(
+        "En este ejemplo, **Manual Trigger** inicia una prueba y envía un "
+        "elemento a **HTTP Request 401**, que intenta consultar un servicio web. "
+        "Ese nodo tiene dos salidas: **Success** para una respuesta correcta y "
+        "**Error** cuando la solicitud falla. La salida de error se conecta a "
+        "**Capturar error**, mientras que la salida de éxito lleva a un paso "
+        "llamado **OK (no debería llegar)**. Así, el flujo puede tratar cada "
+        "resultado por separado."
+    )
+    st.caption(
+        "Las líneas muestran por dónde pasan los datos. **1 item** significa que "
+        "un elemento llegó a ese punto de la ejecución; no es un mensaje de error."
+    )
+    with st.expander("Ver imagen · Nodos y ramas del ejemplo"):
+        st.image(
+            str(SCREENSHOTS_DIR / "08_flujo_nodos.png"),
+            caption="Nodos conectados y ramas de éxito y error.",
+            width="stretch",
+        )
+
+    st.subheader("5. El nodo HTTP Request: revisar lo que se envió y lo que falló")
+    st.write(
+        "**HTTP Request** es un nodo que hace una solicitud a una dirección web. "
+        "En sus parámetros se eligen el método (en este caso, GET), la dirección "
+        "y, si hace falta, la autenticación, encabezados o datos. La URL de la "
+        "captura está preparada para responder **401**, un código que suele "
+        "indicar que la solicitud no está autorizada. En la salida **Error** "
+        "se ven detalles técnicos como el mensaje, el nombre del error y el "
+        "registro de ejecución."
+    )
+    st.caption(
+        "No hace falta memorizar estos términos: para usar el diagnóstico basta "
+        "con identificar el código o describir lo que observaste."
+    )
+    with st.expander("Ver imagen · Solicitud HTTP y error 401"):
+        st.image(
+            str(SCREENSHOTS_DIR / "09_salida_request_401.png"),
+            caption="Parámetros de la solicitud y detalle del error 401.",
+            width="stretch",
+        )
+
+    st.subheader("6. Capturar error: guardar un mensaje más fácil de reutilizar")
+    st.write(
+        "Después del HTTP Request, el nodo **Capturar error** recibe la "
+        "información de la rama de error. En **Fields to Set** se crea el campo "
+        "`error_capturado` y se le asigna el mensaje recibido. El panel de salida "
+        "muestra ese valor. En un flujo real, este paso ayuda a ordenar la "
+        "información o prepararla para otro paso, como una notificación."
+    )
+    st.caption(
+        "La expresión verde `{{ $json.error.message }}` significa: toma el campo "
+        "`message` que viene dentro de `error` en los datos de este paso."
+    )
+    with st.expander("Ver imagen · Nodo para capturar el error"):
+        st.image(
+            str(SCREENSHOTS_DIR / "10_salida_capturar_error.png"),
+            caption="El nodo toma el mensaje del error y lo guarda en un campo.",
+            width="stretch",
+        )
+
+    st.subheader("7. Logs y ejecuciones: encontrar en qué paso ocurrió")
+    st.write(
+        "Los **logs** muestran el recorrido que hizo una ejecución y el resultado "
+        "de cada nodo. En la captura se puede seleccionar **HTTP Request 401** "
+        "en la lista de pasos y revisar su salida de error. Esto permite ubicar "
+        "qué nodo falló y leer el mensaje asociado. Si el problema continúa, "
+        "esta es una buena sección para consultar antes de completar el formulario."
+    )
+    with st.expander("Ver imagen · Registros de ejecución"):
+        st.image(
+            str(SCREENSHOTS_DIR / "11_logs.png"),
+            caption="Registro de ejecución y salida del nodo seleccionado.",
+            width="stretch",
+        )
+
+    with st.expander("¿Qué información conviene llevar al formulario?"):
+        st.markdown(
+            "- El código HTTP, si aparece en la salida o el mensaje del nodo.\n"
+            "- Qué paso presentó el problema y qué observaste.\n"
+            "- Si el flujo estaba activo, usaba una URL de prueba o procesaba "
+            "muchos elementos, cuando esa información esté disponible."
+        )
+        st.warning(
+            "No copies contraseñas, tokens ni claves privadas. El diagnóstico "
+            "es orientativo, no se conecta a tu cuenta ni cambia tu flujo."
+        )
+
+    st.button(
+        "Ya entiendo lo básico — probar el formulario",
+        key="ir_a_diagnostico_desde_guia",
+        type="primary",
+        on_click=_go_to_diagnosis,
+    )
 
 
 def _clear_manual_fields():
@@ -403,14 +725,15 @@ def _show_resultado(resultado):
 
 
 def main():
-    st.set_page_config(page_title="Diagnóstico experto de n8n")
-    st.title("Ayuda para revisar un flujo de trabajo")
-    st.caption(
-        "No necesitas conocer n8n: cuéntanos qué pasó y te mostraremos posibles causas "
-        "y qué puedes revisar."
+    st.set_page_config(
+        page_title="Diagnóstico experto de n8n",
+        page_icon="🧭",
+        layout="wide",
     )
+    _apply_visual_theme()
 
     for key, default in (
+        (PAGE_KEY, INTRO_PAGE),
         (HTTP_KEY, None),
         (OTHER_HTTP_KEY, None),
         (AUTH_KEY, NO_APLICA),
@@ -425,6 +748,44 @@ def main():
     ):
         if key not in st.session_state:
             st.session_state[key] = default
+
+    with st.sidebar:
+        current_step = 1 if st.session_state[PAGE_KEY] == INTRO_PAGE else 2
+        st.header("Tu recorrido")
+        st.caption("Avanza a tu ritmo. Puedes volver a la guía cuando quieras.")
+        st.caption(f"Paso {current_step} de 2")
+        st.markdown(
+            '<div class="journey-progress" role="progressbar" '
+            f'aria-valuemin="1" aria-valuemax="2" aria-valuenow="{current_step}" '
+            f'aria-valuetext="Paso {current_step} de 2">'
+            f'<span style="width:{current_step * 50}%"></span></div>',
+            unsafe_allow_html=True,
+        )
+        st.button(
+            "01  ·  Aprende cómo funciona n8n",
+            key="navegar_guia",
+            type="primary" if current_step == 1 else "secondary",
+            on_click=_go_to_guide,
+        )
+        st.caption("Conoce los flujos, los nodos y dónde revisar sus errores.")
+        st.button(
+            "02  ·  Prueba el diagnóstico",
+            key="navegar_diagnostico",
+            type="primary" if current_step == 2 else "secondary",
+            on_click=_go_to_diagnosis,
+        )
+        st.caption("Cuéntanos qué observaste y revisa posibles causas.")
+        st.divider()
+
+    if st.session_state[PAGE_KEY] == INTRO_PAGE:
+        _show_n8n_guide()
+        return
+
+    st.title("Ayuda para revisar un flujo de trabajo")
+    st.caption(
+        "No necesitas conocer n8n: cuéntanos qué pasó y te mostraremos posibles causas "
+        "y qué puedes revisar."
+    )
 
     with st.sidebar:
         st.header("Guía y ayuda")
